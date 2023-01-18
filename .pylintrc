@@ -1,0 +1,4 @@
+[MASTER]
+
+# Until issue about setuptools and editable mode gets resolved
+disable=import-error
