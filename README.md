@@ -10,6 +10,19 @@ Welcome to pylisp.
 >
 ```
 
+## Built-ins
+
+ - lambda
+ - set!
+ - +, and *
+ - if
+ 
+## Want to Have
+
+ - Booleans
+ - Multiple args
+ - Simple math functions. Maybe import from Python?
+
 ## Installing Python
 
 I use [pyenv](https://github.com/pyenv/pyenv#upgrading-with-homebrew) to manage Python versions.
