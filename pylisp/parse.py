@@ -3,7 +3,7 @@ from pylisp.eval import Symbol
 
 TokenType = Literal["LEFT_PAREN", "RIGHT_PAREN", "NUMBER", "SYMBOL", "KEYWORD"]
 
-KEYWORDS = ("lambda", "if", "quote")
+KEYWORDS = ("lambda", "if", "quote", "set!")
 
 
 class Token(TypedDict):

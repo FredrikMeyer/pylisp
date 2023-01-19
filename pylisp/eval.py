@@ -23,6 +23,7 @@ class Environment:
     """
     Represents the current environment.
     """
+
     vars: Frame
     outer: Optional["Environment"]
 
@@ -36,8 +37,11 @@ class Environment:
 
         return None
 
-    def extend_environment(self, values: list[tuple[Symbol, Atom]]):
+    def extend_environment(self, values: list[tuple[Symbol, Atom]]) -> "Environment":
         return Environment(vars=dict((k, v) for k, v in values), outer=self)
+
+    def update_environment(self, symbol: Symbol, value: Atom) -> None:
+        self.vars[symbol] = value
 
 
 @dataclass
@@ -53,7 +57,13 @@ class PrimitiveFunction:
 
 
 def standard_env() -> Environment:
-    return Environment(vars={Symbol("+"): PrimitiveFunction(func=add)}, outer=None)
+    return Environment(
+        vars={
+            Symbol("+"): PrimitiveFunction(func=add),
+            Symbol("*"): PrimitiveFunction(func=mult),
+        },
+        outer=None,
+    )
 
 
 def car(expr: list[Expr | Atom]):
@@ -109,6 +119,18 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
             return eval_sexp(caddr(expr), env)
         else:
             return eval_sexp(cadddr(expr), env)
+
+    if car(expr) == "set!":
+        name = cadr(expr)
+        if check_symbol(name):
+            value = eval_sexp(caddr(expr), env)
+            if check_atom(value):
+                env.update_environment(name, value)
+                return value
+            else:
+                raise RuntimeError("Wrong type of arg to set!.")
+        else:
+            raise RuntimeError("Value must be symbol.")
     if car(expr) == "lambda":
         args = cadr(expr)
         if not isinstance(args, list):
@@ -158,8 +180,16 @@ def check_all_number(atoms: list[Atom | Expr]) -> TypeGuard[list[int | float]]:
     return all(isinstance(x, (int, float)) for x in atoms)
 
 
+def check_symbol(arg: Expr) -> TypeGuard[Symbol]:
+    return isinstance(arg, Symbol)
+
+
 def check_all_symbol(args: list[Expr | Atom]) -> TypeGuard[list[Symbol]]:
     return all(isinstance(x, Symbol) for x in args)
+
+
+def check_atom(arg: Expr | Atom) -> TypeGuard[Atom]:
+    return not isinstance(arg, list)
 
 
 def check_all_atom(args: list[Expr | Atom]) -> TypeGuard[list[Atom]]:
@@ -168,3 +198,7 @@ def check_all_atom(args: list[Expr | Atom]) -> TypeGuard[list[Atom]]:
 
 def add(args: list[int | float]) -> float:
     return reduce(lambda acc, curr: acc + curr, args, 0.0)
+
+
+def mult(args: list[int | float]) -> float:
+    return reduce(lambda acc, curr: acc * curr, args, 1.0)

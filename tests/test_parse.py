@@ -50,9 +50,9 @@ def test_many(inp: str, exp):
 
 
 def test_unbalanced():
-    with pytest.raises(IndexError):
+    with pytest.raises(RuntimeError):
         parse_string("(+ 1 2))")
-    with pytest.raises(IndexError):
+    with pytest.raises(RuntimeError):
         parse_string("((+ 1 2)")
 
 
