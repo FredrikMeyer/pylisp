@@ -1,5 +1,15 @@
 # (yet another) Python Lisp
 
+## Usage
+
+```bash
+>  python pylisp/repl.py                                                                     ─╯
+Welcome to pylisp.
+>((lambda (x) (+ 2 x)) 5)
+7.0
+>
+```
+
 ## Installing Python
 
 I use [pyenv](https://github.com/pyenv/pyenv#upgrading-with-homebrew) to manage Python versions.

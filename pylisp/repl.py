@@ -17,7 +17,7 @@ if __name__ == "__main__":
     import cmd
 
     class CmdL(cmd.Cmd):
-        intro = "hei"
+        intro = "Welcome to pylisp."
         prompt = ">"
 
         def default(self, inp: str):
