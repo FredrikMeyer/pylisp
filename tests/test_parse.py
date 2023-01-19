@@ -1,4 +1,5 @@
 import pytest
+from pylisp.eval import Symbol
 from pylisp.parse import parse_string, slurp_token, slurp_whitespace, tokenize, Token
 
 
@@ -16,7 +17,7 @@ def test_simple_expression():
     assert isinstance(res, list)
     assert len(res) == 3
 
-    assert res[0] == "+"
+    assert res[0] == Symbol(name="+")
     assert res[1] == 1
     assert res[2] == 2
 
@@ -27,7 +28,7 @@ def test_nested():
     assert len(res) == 3
     print("RES", res)
     assert len(res[1]) == 3
-    assert res[1][0] == "+"
+    assert res[1][0] == Symbol(name="+")
     assert res[1][1] == 1
     assert res[1][2] == 2
 
@@ -35,9 +36,12 @@ def test_nested():
 @pytest.mark.parametrize(
     "inp,exp",
     [
-        ("(+ 1 2)", ["+", 1, 2]),
-        ("(+ (* 2 4) (+ 1 2))", ["+", ["*", 2, 4], ["+", 1, 2]]),
-        ("(+ 2 x)", ["+", 2, "x"])
+        ("(+ 1 2)", [Symbol(name="+"), 1, 2]),
+        (
+            "(+ (* 2 4) (+ 1 2))",
+            [Symbol(name="+"), [Symbol("*"), 2, 4], [Symbol("+"), 1, 2]],
+        ),
+        ("(+ 2 x)", [Symbol("+"), 2, Symbol("x")]),
     ],
 )
 def test_many(inp: str, exp):

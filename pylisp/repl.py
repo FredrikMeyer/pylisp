@@ -1,16 +1,27 @@
-from pylisp.eval import Environment, eval_sexp
+from pylisp.eval import Environment, add, eval_sexp, Symbol, PrimitiveFunction
 from pylisp.parse import parse_string
 
 
 def main(inp: str):
-    r = parse_string(inp)
+    try:
+        r = parse_string(inp)
+        res = eval_sexp(
+            r, env=Environment(vars={Symbol("+"): PrimitiveFunction(func=add)}, outer=None)
+        )
+        return res
+    except Exception as e:
+        return str(e)
 
-    return eval_sexp(r, env=Environment(vars={}, outer=None))
 
-if __name__ == '__main__':
-    while True:
-        inp = input(">> ")
-        res = main(inp)
-        print(res)
+if __name__ == "__main__":
+    import cmd
 
-        print(">>")
+    class CmdL(cmd.Cmd):
+        intro = "hei"
+        prompt = ">"
+
+        def default(self, inp: str):
+            res = main(inp)
+            print(res)
+
+    CmdL().cmdloop()

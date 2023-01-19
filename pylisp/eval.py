@@ -1,27 +1,33 @@
 from functools import reduce
-from typing import TypeGuard, TypedDict, Union, Optional
+from typing import Callable, TypeGuard, Union, Optional
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Symbol:
+    """
+    Represents a variable.
+    """
+
     name: str
 
 
-Atom = Union[bool, str, int, float, Symbol]
-Expr = Union[list["Expr"], Atom]
+Atom = Union[bool, str, int, float, Symbol, "UserFunction", "PrimitiveFunction"]
+Expr = Union[list["Expr" | Atom], Atom]
 
-Frame = dict[str, Atom]
+Frame = dict[Symbol, Atom]
 
 
 @dataclass
 class Environment:
+    """
+    Represents the current environment.
+    """
     vars: Frame
     outer: Optional["Environment"]
 
-    def lookup_variable(self, variable: Symbol):
-        name = variable.name
-        var = self.vars.get(name)
+    def lookup_variable(self, variable: Symbol) -> Atom | None:
+        var = self.vars.get(variable)
         if var is not None:
             return var
 
@@ -30,7 +36,7 @@ class Environment:
 
         return None
 
-    def extend_environment(self, values: list[tuple[str, Atom]]):
+    def extend_environment(self, values: list[tuple[Symbol, Atom]]):
         return Environment(vars=dict((k, v) for k, v in values), outer=self)
 
 
@@ -38,26 +44,35 @@ class Environment:
 class UserFunction:
     body: Expr
     env: Environment
-    args: list[str]
+    args: list[Symbol]
 
 
-def car(expr: list[Expr]):
+@dataclass
+class PrimitiveFunction:
+    func: Callable
+
+
+def standard_env() -> Environment:
+    return Environment(vars={Symbol("+"): PrimitiveFunction(func=add)}, outer=None)
+
+
+def car(expr: list[Expr | Atom]):
     return expr[0]
 
 
-def cdr(expr: list[Expr]):
+def cdr(expr: list[Expr | Atom]):
     return expr[1:]
 
 
-def cadr(expr: list[Expr]):
+def cadr(expr: list[Expr | Atom]):
     return expr[1]
 
 
-def caddr(expr: list[Expr]):
+def caddr(expr: list[Expr | Atom]):
     return expr[2]
 
 
-def cadddr(expr: list[Expr]):
+def cadddr(expr: list[Expr | Atom]):
     return expr[3]
 
 
@@ -74,8 +89,7 @@ def is_variable(expr: Expr) -> TypeGuard[Symbol]:
     return False
 
 
-def eval_sexp(expr: Expr, env: Environment):
-    print("ENV", env)
+def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
     if is_self_evaluating(expr):
         return expr
     if is_variable(expr):
@@ -97,25 +111,34 @@ def eval_sexp(expr: Expr, env: Environment):
             return eval_sexp(cadddr(expr), env)
     if car(expr) == "lambda":
         args = cadr(expr)
+        if not isinstance(args, list):
+            raise RuntimeError("Syntax error.")
+
         body = caddr(expr)
-        return UserFunction(body=body, args=args, env=env)
+        if check_all_symbol(args):
+            return UserFunction(body=body, args=args, env=env)
+
+        raise RuntimeError(f"Lambda args must be symbols. Args {args}.")
 
     fn = eval_sexp(car(expr), env)
-    args = list(map(lambda e: eval_sexp(e, env), cdr(expr)))
+    if not isinstance(fn, (UserFunction, PrimitiveFunction)):
+        raise RuntimeError(
+            f"Unknown function: {fn}. Is of type {type(fn)}. Expr: {expr}"
+        )
 
-    print(f"FN: {fn}. Args: {args}.")
+    args = list(map(lambda e: eval_sexp(e, env), cdr(expr)))
 
     return apply_sexp(fn, args)
 
-    raise NotImplementedError(f"Not implemented. Unknown sexp: {expr}")
 
+def apply_sexp(
+    proc: UserFunction | PrimitiveFunction, args: list[Atom | Expr]
+) -> Atom | Expr | UserFunction:
+    if isinstance(proc, PrimitiveFunction):
+        if check_all_number(args):
+            return add(args)
 
-def apply_sexp(proc: UserFunction | list[Expr], args: list[Atom]):
-    # fn = eval_sexp(car(expr), env)
-    # args = list(map(lambda e: eval_sexp(e, env), cdr(expr)))
-
-    if proc == "+":
-        return add(args)
+        raise RuntimeError("Not all arguments are numbers.")
 
     if not isinstance(proc, UserFunction):
         raise RuntimeError(f"Unknown function {proc}.")
@@ -124,9 +147,24 @@ def apply_sexp(proc: UserFunction | list[Expr], args: list[Atom]):
     if len(procedure_args) != len(args):
         raise RuntimeError(f"Wrong number of args passed to function {proc}.")
 
+    if not check_all_atom(args):
+        raise RuntimeError("Not all args are atoms.")
     new_env_values = list(zip(procedure_args, args))
+
     return eval_sexp(proc.body, proc.env.extend_environment(new_env_values))
 
 
-def add(args: list[int]):
-    return reduce(lambda acc, curr: acc + curr, args, 0)
+def check_all_number(atoms: list[Atom | Expr]) -> TypeGuard[list[int | float]]:
+    return all(isinstance(x, (int, float)) for x in atoms)
+
+
+def check_all_symbol(args: list[Expr | Atom]) -> TypeGuard[list[Symbol]]:
+    return all(isinstance(x, Symbol) for x in args)
+
+
+def check_all_atom(args: list[Expr | Atom]) -> TypeGuard[list[Atom]]:
+    return all(not isinstance(x, list) for x in args)
+
+
+def add(args: list[int | float]) -> float:
+    return reduce(lambda acc, curr: acc + curr, args, 0.0)

@@ -18,3 +18,7 @@ classifiers = [
 
 [project.urls]
 "Homepage" = "https://github.com/pypa/sampleproject"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
