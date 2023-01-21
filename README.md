@@ -24,7 +24,7 @@ Welcome to pylisp.
 
  - lambda
  - set!
- - +, and *
+ - +, and *, <, =, dec
  - if
  
 ## Want to Have
