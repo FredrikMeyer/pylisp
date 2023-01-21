@@ -1,5 +1,11 @@
 # (yet another) Python Lisp
 
+## Installation
+
+Run `pip install --editable .`. There are no dependencies.
+
+Run tests with `pytest`, and linting with `flake8 .`
+
 ## Usage
 
 ```bash
@@ -26,6 +32,7 @@ Welcome to pylisp.
  - set!
  - +, and *, <, =, dec
  - if
+ - doc (docstring for built-ins)
  
 ## Want to Have
 

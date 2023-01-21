@@ -59,6 +59,7 @@ class UserFunction:
 @dataclass
 class PrimitiveFunction:
     func: Callable
+    doc: str
 
     def __call__(self, args: list[Atom]) -> Any:
         return self.func(args)
@@ -67,11 +68,22 @@ class PrimitiveFunction:
 def standard_env() -> Environment:
     return Environment(
         vars={
-            Symbol("+"): PrimitiveFunction(func=add),
-            Symbol("dec"): PrimitiveFunction(func=lambda a: a[0] - 1),
-            Symbol("*"): PrimitiveFunction(func=mult),
-            Symbol("<"): PrimitiveFunction(func=lambda a: op.lt(*a)),
-            Symbol("="): PrimitiveFunction(func=lambda a: op.eq(*a)),
+            Symbol("+"): PrimitiveFunction(func=add, doc="Add a list of numbers."),
+            Symbol("dec"): PrimitiveFunction(
+                func=lambda a: a[0] - 1, doc="Decrement a number."
+            ),
+            Symbol("*"): PrimitiveFunction(
+                func=mult, doc="Multiply a list of numbers."
+            ),
+            Symbol("<"): PrimitiveFunction(
+                func=lambda a: op.lt(*a), doc="Less than. Accepts two arguments."
+            ),
+            Symbol("="): PrimitiveFunction(
+                func=lambda a: op.eq(*a), doc="Equals. Accepts two arguments."
+            ),
+            Symbol("doc"): PrimitiveFunction(
+                func=lambda a: print(a[0].doc), doc="Print a function docstring."
+            ),
         },
         outer=None,
     )
