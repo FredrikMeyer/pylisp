@@ -5,6 +5,7 @@ from pylisp.eval import (
     UserFunction,
     apply_sexp,
     eval_sexp,
+    mult,
     standard_env,
 )
 
@@ -86,3 +87,9 @@ def test_apply_sexp():
 
     print(res)
     assert res == 4
+
+
+def test_mult():
+    res = mult([1, 2., 3])
+
+    assert res == 6.

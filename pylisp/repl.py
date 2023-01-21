@@ -1,3 +1,4 @@
+import traceback
 from pylisp.eval import (
     Environment,
     eval_sexp,
@@ -12,6 +13,7 @@ def main(inp: str, env: Environment):
         res = eval_sexp(r, env=env)
         return res
     except Exception as e:
+        print(traceback.format_exc())
         return str(e)
 
 

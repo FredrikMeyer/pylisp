@@ -1,6 +1,7 @@
 from functools import reduce
-from typing import Callable, TypeGuard, Union, Optional
+from typing import Any, Callable, TypeGuard, Union, Optional
 from dataclasses import dataclass
+import operator as op
 
 
 @dataclass(eq=True, frozen=True)
@@ -28,6 +29,10 @@ class Environment:
     outer: Optional["Environment"]
 
     def lookup_variable(self, variable: Symbol) -> Atom | None:
+        """
+        Lookup variable in environment. Lexical scoping is used: if the variable is
+        not found in the current frame, we look it up in the outer frame recursively.
+        """
         var = self.vars.get(variable)
         if var is not None:
             return var
@@ -55,12 +60,18 @@ class UserFunction:
 class PrimitiveFunction:
     func: Callable
 
+    def __call__(self, args: list[Atom]) -> Any:
+        return self.func(args)
+
 
 def standard_env() -> Environment:
     return Environment(
         vars={
             Symbol("+"): PrimitiveFunction(func=add),
+            Symbol("dec"): PrimitiveFunction(func=lambda a: a[0] - 1),
             Symbol("*"): PrimitiveFunction(func=mult),
+            Symbol("<"): PrimitiveFunction(func=lambda a: op.lt(*a)),
+            Symbol("="): PrimitiveFunction(func=lambda a: op.eq(*a)),
         },
         outer=None,
     )
@@ -157,8 +168,10 @@ def apply_sexp(
     proc: UserFunction | PrimitiveFunction, args: list[Atom | Expr]
 ) -> Atom | Expr | UserFunction:
     if isinstance(proc, PrimitiveFunction):
-        if check_all_number(args):
-            return add(args)
+        if check_all_atom(args):
+            return proc(args)
+        # if check_all_number(args):
+        #     return add(args)
 
         raise RuntimeError("Not all arguments are numbers.")
 

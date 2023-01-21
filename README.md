@@ -3,11 +3,21 @@
 ## Usage
 
 ```bash
->  python pylisp/repl.py                                                                     ─╯
+>  python pylisp/repl.py
 Welcome to pylisp.
 >((lambda (x) (+ 2 x)) 5)
 7.0
 >
+```
+
+### Factorial function
+
+```bash
+> python pylisp/repl.py
+Welcome to pylisp.
+>(set! f (lambda (x) (if (< x 2) x (* x (f (dec x))))))
+>(f 7)
+5040.0
 ```
 
 ## Built-ins
