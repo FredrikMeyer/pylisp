@@ -1,4 +1,4 @@
-from typing import Literal, TypedDict
+from typing import Literal, TypedDict, Union
 from pylisp.eval import Expr, Symbol
 
 TokenType = Literal["LEFT_PAREN", "RIGHT_PAREN", "NUMBER", "SYMBOL", "KEYWORD"]
@@ -81,7 +81,7 @@ def slurp_whitespace(inp: str) -> str:
 
 
 Value = str | int | bool | Symbol
-ValueExp = list["ValueExp" | "Value"] | Value
+ValueExp = Union[list[Union["ValueExp", Value]], Value]
 
 
 def parse_string(inp: str) -> Expr:
