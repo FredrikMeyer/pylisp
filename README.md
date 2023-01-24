@@ -29,16 +29,19 @@ Welcome to pylisp.
 ## Built-ins
 
  - lambda
- - set!
+ - define
  - +, and *, <, =, dec
  - if
  - doc (docstring for built-ins)
+ - car
  
 ## Want to Have
 
  - Booleans
  - Multiple args
  - Simple math functions. Maybe import from Python?
+ - Quotes
+ - Macros
 
 ## Installing Python
 

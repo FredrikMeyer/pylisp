@@ -88,7 +88,7 @@ def standard_env() -> Environment:
                 func=lambda a: print(a[0].doc), doc="Print a function docstring."
             ),
             Symbol("car"): PrimitiveFunction(
-                func=car, doc="Return first element of list."
+                func=lambda a: car(*a), doc="Return first element of list."
             ),
         },
         outer=None,
@@ -149,7 +149,7 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
         else:
             return eval_sexp(cadddr(expr), env)
 
-    if car(expr) == "set!":
+    if car(expr) == "define":
         name = cadr(expr)
         if check_symbol(name):
             value = eval_sexp(caddr(expr), env)
@@ -157,7 +157,7 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
                 env.update_environment(name, value)
                 return value
             else:
-                raise RuntimeError("Wrong type of arg to set!.")
+                raise RuntimeError("Wrong type of arg to define.")
         else:
             raise RuntimeError("Value must be symbol.")
     if car(expr) == "lambda":
@@ -189,12 +189,7 @@ def apply_sexp(
     proc: UserFunction | PrimitiveFunction[Expr], args: list[Atom | Expr]
 ) -> Atom | Expr | UserFunction:
     if isinstance(proc, PrimitiveFunction):
-        if check_all_atom(args):
-            return proc(args)
-        # if check_all_number(args):
-        #     return add(args)
-
-        raise RuntimeError("Not all arguments are numbers.")
+        return proc(args)
 
     if not isinstance(proc, UserFunction):
         raise RuntimeError(f"Unknown function {proc}.")

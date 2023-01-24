@@ -4,6 +4,7 @@ from pylisp.eval import (
     Symbol,
     UserFunction,
     apply_sexp,
+    check_all_number,
     eval_sexp,
     mult,
     standard_env,
@@ -93,3 +94,22 @@ def test_mult():
     res = mult([1, 2.0, 3])
 
     assert res == 6.0
+
+
+def test_check_all_number():
+    res = check_all_number(["1", 2, 3])
+
+    assert res == False
+
+    res = check_all_number([1, 2, 3])
+    assert res == True
+
+
+def test_define():
+    env = standard_env()
+    res = eval_sexp(["define", Symbol("x"), 2], env)
+    assert res == 2
+
+    val = env.lookup_variable(Symbol("x"))
+
+    assert val == 2
