@@ -90,6 +90,6 @@ def test_apply_sexp():
 
 
 def test_mult():
-    res = mult([1, 2., 3])
+    res = mult([1, 2.0, 3])
 
-    assert res == 6.
+    assert res == 6.0

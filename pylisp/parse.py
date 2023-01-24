@@ -1,5 +1,5 @@
-from typing import Any, List, Literal, TypedDict
-from pylisp.eval import Symbol
+from typing import Literal, TypedDict, Union
+from pylisp.eval import Expr, Symbol
 
 TokenType = Literal["LEFT_PAREN", "RIGHT_PAREN", "NUMBER", "SYMBOL", "KEYWORD"]
 
@@ -80,16 +80,23 @@ def slurp_whitespace(inp: str) -> str:
     return inp[i - 1 :]
 
 
-def parse_string(inp: str):
+Value = str | int | bool | Symbol
+ValueExp = Union[list[Union["ValueExp", Value]], Value]
+
+
+def parse_string(inp: str) -> Expr:
     """
     Parse s-expression into binary tree to be used by the evaluator.
     """
     tokens = tokenize(inp)
 
-    stack: List[List[Any]] = [[]]
+    stack: list[list[Expr]] = [[]]
 
     if len(tokens) == 1:
-        return tokens[0]["payload"]
+        # We only have a single symbol/value.
+        val = tokens[0]["payload"]
+        assert val is not None
+        return val
 
     current_token = 0
     while current_token < len(tokens):
@@ -104,11 +111,13 @@ def parse_string(inp: str):
         else:
             stack_len = len(stack)
             top_token = tokens[current_token]
-            value: str | int | bool | Symbol | None
+            value: str | int | bool | Symbol
             if top_token["token_type"] == "SYMBOL":
                 value = Symbol(name=str(top_token["payload"]))
             else:
-                value = top_token["payload"]
+                payload = top_token["payload"]
+                assert payload is not None
+                value = payload
             stack[stack_len - 1].append(value)
         current_token += 1
 

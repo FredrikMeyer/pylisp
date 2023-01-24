@@ -1,13 +1,14 @@
 import traceback
 from pylisp.eval import (
     Environment,
+    Expr,
     eval_sexp,
     standard_env,
 )
 from pylisp.parse import parse_string
 
 
-def main(inp: str, env: Environment):
+def main(inp: str, env: Environment) -> Expr:
     try:
         r = parse_string(inp)
         res = eval_sexp(r, env=env)
@@ -26,10 +27,10 @@ if __name__ == "__main__":
 
         env = standard_env()
 
-        def do_env(self, arg):
+        def do_env(self, arg: str) -> None:
             print(self.env)
 
-        def default(self, inp: str):
+        def default(self, inp: str) -> None:
             res = main(inp, self.env)
             print(res)
 
