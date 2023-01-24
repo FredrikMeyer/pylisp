@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import Any, Callable, TypeGuard, Union, Optional
+from typing import Callable, Generic, Sequence, TypeGuard, TypeVar, Union, Optional
 from dataclasses import dataclass
 import operator as op
 
@@ -56,12 +56,15 @@ class UserFunction:
     args: list[Symbol]
 
 
+SubTypeAtom = TypeVar("SubTypeAtom", bound=Expr)
+
+
 @dataclass
-class PrimitiveFunction:
-    func: Callable
+class PrimitiveFunction(Generic[SubTypeAtom]):
+    func: Callable[[Sequence[SubTypeAtom]], SubTypeAtom]
     doc: str
 
-    def __call__(self, args: list[Atom]) -> Any:
+    def __call__(self, args: Sequence[SubTypeAtom]) -> SubTypeAtom:
         return self.func(args)
 
 
@@ -84,28 +87,31 @@ def standard_env() -> Environment:
             Symbol("doc"): PrimitiveFunction(
                 func=lambda a: print(a[0].doc), doc="Print a function docstring."
             ),
+            Symbol("car"): PrimitiveFunction(
+                func=car, doc="Return first element of list."
+            ),
         },
         outer=None,
     )
 
 
-def car(expr: list[Expr | Atom]):
+def car(expr: Sequence[Expr]) -> Expr:
     return expr[0]
 
 
-def cdr(expr: list[Expr | Atom]):
+def cdr(expr: list[Expr]) -> Expr:
     return expr[1:]
 
 
-def cadr(expr: list[Expr | Atom]):
+def cadr(expr: list[Expr]) -> Expr:
     return expr[1]
 
 
-def caddr(expr: list[Expr | Atom]):
+def caddr(expr: list[Expr]) -> Expr:
     return expr[2]
 
 
-def cadddr(expr: list[Expr | Atom]):
+def cadddr(expr: list[Expr]) -> Expr:
     return expr[3]
 
 
@@ -171,13 +177,16 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
             f"Unknown function: {fn}. Is of type {type(fn)}. Expr: {expr}"
         )
 
-    args = list(map(lambda e: eval_sexp(e, env), cdr(expr)))
+    args = cdr(expr)
+    if not isinstance(args, list):
+        raise RuntimeError("Arguments is not a list")
+    args_evaluated = list(map(lambda e: eval_sexp(e, env), args))
 
-    return apply_sexp(fn, args)
+    return apply_sexp(fn, args_evaluated)
 
 
 def apply_sexp(
-    proc: UserFunction | PrimitiveFunction, args: list[Atom | Expr]
+    proc: UserFunction | PrimitiveFunction[Expr], args: list[Atom | Expr]
 ) -> Atom | Expr | UserFunction:
     if isinstance(proc, PrimitiveFunction):
         if check_all_atom(args):
@@ -221,9 +230,9 @@ def check_all_atom(args: list[Expr | Atom]) -> TypeGuard[list[Atom]]:
     return all(not isinstance(x, list) for x in args)
 
 
-def add(args: list[int | float]) -> float:
+def add(args: Sequence[int | float]) -> float:
     return reduce(lambda acc, curr: acc + curr, args, 0.0)
 
 
-def mult(args: list[int | float]) -> float:
+def mult(args: Sequence[int | float]) -> float:
     return reduce(lambda acc, curr: acc * curr, args, 1.0)
