@@ -28,7 +28,7 @@ jobs:
         pip install .
     - name: mypy type checks
       run: |
-        mypy -p pylisp
+        python test_mypy_api.py # mypy -p pylisp
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
