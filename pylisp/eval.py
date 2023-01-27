@@ -3,9 +3,6 @@ from typing import Callable, Generic, Sequence, TypeGuard, TypeVar, Union, Optio
 from dataclasses import dataclass
 import operator as op
 
-def xxx(a: int):
-    return "hei"
-
 
 @dataclass(eq=True, frozen=True)
 class Symbol:
@@ -234,7 +231,3 @@ def add(args: Sequence[int | float]) -> float:
 
 def mult(args: Sequence[int | float]) -> float:
     return reduce(lambda acc, curr: acc * curr, args, 1.0)
-
-def yyy(a: int):
-    a + "dd"
-    return "hei"
