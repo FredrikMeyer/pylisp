@@ -1,3 +1,6 @@
+"""
+Simple REPL functionality for pylisp.
+"""
 import traceback
 from pylisp.eval import (
     Environment,
@@ -9,9 +12,12 @@ from pylisp.parse import parse_string
 
 
 def main(inp: str, env: Environment) -> Expr:
+    """
+    The main method. Input is any string and an environment to run in.
+    """
     try:
-        r = parse_string(inp)
-        res = eval_sexp(r, env=env)
+        parsed_string = parse_string(inp)
+        res = eval_sexp(parsed_string, env=env)
         return res
     except Exception as e:
         print(traceback.format_exc())
@@ -22,16 +28,22 @@ if __name__ == "__main__":
     import cmd
 
     class CmdL(cmd.Cmd):
+        """
+        Subclass of cmd.Cmd. Makes a simple read-eval loop.
+        """
         intro = "Welcome to pylisp."
         prompt = ">"
 
         env = standard_env()
 
         def do_env(self, arg: str) -> None:
+            """
+            Print the current environment.
+            """
             print(self.env)
 
-        def default(self, inp: str) -> None:
-            res = main(inp, self.env)
+        def default(self, line: str) -> None:
+            res = main(line, self.env)
             print(res)
 
     CmdL().cmdloop()

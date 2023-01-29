@@ -1,5 +1,16 @@
+"""
+Code for evalutating S-expressions.
+"""
 from functools import reduce
-from typing import Callable, Generic, Sequence, TypeGuard, TypeVar, Union, Optional
+from typing import (
+    Callable,
+    Generic,
+    Sequence,
+    TypeGuard,
+    TypeVar,
+    Union,
+    Optional,
+)
 from dataclasses import dataclass
 import operator as op
 
@@ -14,7 +25,7 @@ class Symbol:
 
 
 Atom = Union[bool, str, int, float, Symbol, "UserFunction", "PrimitiveFunction"]
-Expr = Union[list["Expr" | Atom], Atom]
+Expr = Union[Sequence["Expr" | Atom], Atom]
 
 Frame = dict[Symbol, Atom]
 
@@ -51,6 +62,10 @@ class Environment:
 
 @dataclass
 class UserFunction:
+    """
+    Represents a lambda function. It has a list of args and a body. It also remembers
+    the environment in which it was created.
+    """
     body: Expr
     env: Environment
     args: list[Symbol]
@@ -85,33 +100,51 @@ def standard_env() -> Environment:
                 func=lambda a: op.eq(*a), doc="Equals. Accepts two arguments."
             ),
             Symbol("doc"): PrimitiveFunction(
-                func=lambda a: print(a[0].doc), doc="Print a function docstring."
+                func=doc, doc="Print a function docstring."
             ),
             Symbol("car"): PrimitiveFunction(
-                func=lambda a: car(*a), doc="Return first element of list."
+                func=lambda a: car(*a),  # pyright: ignore
+                doc="Return first element of list.",
             ),
         },
         outer=None,
     )
 
 
+def doc(expr: Sequence[Expr]) -> Expr:
+    """
+    Print the doc of the given function. The argument must be of type
+    PrimitiveFunction.
+    """
+    if len(expr) != 1:
+        raise RuntimeError("Need only one argument.")
+    first_el = expr[0]
+
+    if not isinstance(first_el, PrimitiveFunction):
+        raise RuntimeError("Can only show doc of built-ins.")
+
+    return first_el.doc
+
+
 def car(expr: Sequence[Expr]) -> Expr:
     return expr[0]
 
 
-def cdr(expr: list[Expr]) -> Expr:
+def cdr(expr: Sequence[Expr]) -> Expr:
+    if not isinstance(expr, list):
+        raise RuntimeError("expr must be a list.")
     return expr[1:]
 
 
-def cadr(expr: list[Expr]) -> Expr:
+def cadr(expr: Sequence[Expr]) -> Expr:
     return expr[1]
 
 
-def caddr(expr: list[Expr]) -> Expr:
+def caddr(expr: Sequence[Expr]) -> Expr:
     return expr[2]
 
 
-def cadddr(expr: list[Expr]) -> Expr:
+def cadddr(expr: Sequence[Expr]) -> Expr:
     return expr[3]
 
 
@@ -136,8 +169,7 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
         if res is None:
             raise LookupError(f"No variable {expr}.")
         return res
-
-    if not isinstance(expr, list):
+    if not isinstance(expr, Sequence):
         raise RuntimeError(f"Unknown token type: {expr}.")
     if len(expr) == 0:
         raise RuntimeError("Empty S-expression.")
