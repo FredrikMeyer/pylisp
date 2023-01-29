@@ -54,9 +54,17 @@ class Environment:
         return None
 
     def extend_environment(self, values: list[tuple[Symbol, Atom]]) -> "Environment":
+        """
+        Extend the current environment with the values provided by 'values'. Creates
+        a new frame.
+        """
         return Environment(vars=dict((k, v) for k, v in values), outer=self)
 
     def update_environment(self, symbol: Symbol, value: Atom) -> None:
+        """
+        Update the current environment. This attaches a new variable to the
+        current frame.
+        """
         self.vars[symbol] = value
 
 
@@ -66,6 +74,7 @@ class UserFunction:
     Represents a lambda function. It has a list of args and a body. It also remembers
     the environment in which it was created.
     """
+
     body: Expr
     env: Environment
     args: list[Symbol]
@@ -76,6 +85,10 @@ SubTypeAtom = TypeVar("SubTypeAtom", bound=Expr)
 
 @dataclass
 class PrimitiveFunction(Generic[SubTypeAtom]):
+    """
+    A primitive function is a non-Lisp function.
+    """
+
     func: Callable[[Sequence[SubTypeAtom]], SubTypeAtom]
     doc: str
 
@@ -84,6 +97,9 @@ class PrimitiveFunction(Generic[SubTypeAtom]):
 
 
 def standard_env() -> Environment:
+    """
+    The standard environment which includes built-in functions.
+    """
     return Environment(
         vars={
             Symbol("+"): PrimitiveFunction(func=add, doc="Add a list of numbers."),
@@ -162,6 +178,9 @@ def is_variable(expr: Expr) -> TypeGuard[Symbol]:
 
 
 def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
+    """
+    Eval the given S-expression. The first half of the eval-apply loop.
+    """
     if is_self_evaluating(expr):
         return expr
     if is_variable(expr):
@@ -178,8 +197,8 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
     if car(expr) == "if":
         if eval_sexp(cadr(expr), env):
             return eval_sexp(caddr(expr), env)
-        else:
-            return eval_sexp(cadddr(expr), env)
+
+        return eval_sexp(cadddr(expr), env)
 
     if car(expr) == "define":
         name = cadr(expr)
@@ -188,10 +207,10 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
             if check_atom(value):
                 env.update_environment(name, value)
                 return value
-            else:
-                raise RuntimeError("Wrong type of arg to define.")
-        else:
-            raise RuntimeError("Value must be symbol.")
+
+            raise RuntimeError("Wrong type of arg to define.")
+
+        raise RuntimeError("Value must be symbol.")
     if car(expr) == "lambda":
         args = cadr(expr)
         if not isinstance(args, list):
@@ -220,6 +239,10 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
 def apply_sexp(
     proc: UserFunction | PrimitiveFunction[Expr], args: list[Atom | Expr]
 ) -> Atom | Expr | UserFunction:
+    """
+    The other half of the eval-apply loop. Given a function type, reduces it by
+    evaluating terms recursively.
+    """
     if isinstance(proc, PrimitiveFunction):
         return proc(args)
 
@@ -238,14 +261,23 @@ def apply_sexp(
 
 
 def check_all_number(atoms: list[Atom | Expr]) -> TypeGuard[list[int | float]]:
+    """
+    Typeguard to verify that all items in `atoms` is of number type.
+    """
     return all(isinstance(x, (int, float)) for x in atoms)
 
 
 def check_symbol(arg: Expr) -> TypeGuard[Symbol]:
+    """
+    Typeguard to verify that `arg` is a symbol.
+    """
     return isinstance(arg, Symbol)
 
 
 def check_all_symbol(args: list[Expr | Atom]) -> TypeGuard[list[Symbol]]:
+    """
+    Typeguard to verify that all items in `args` are symbols.
+    """
     return all(isinstance(x, Symbol) for x in args)
 
 

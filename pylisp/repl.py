@@ -19,9 +19,9 @@ def main(inp: str, env: Environment) -> Expr:
         parsed_string = parse_string(inp)
         res = eval_sexp(parsed_string, env=env)
         return res
-    except Exception as e:
+    except Exception as exception:
         print(traceback.format_exc())
-        return str(e)
+        return str(exception)
 
 
 if __name__ == "__main__":
@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
         env = standard_env()
 
-        def do_env(self, arg: str) -> None:
+        def do_env(self, _: str) -> None:
             """
             Print the current environment.
             """
