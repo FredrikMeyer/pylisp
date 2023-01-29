@@ -21,7 +21,7 @@ Welcome to pylisp.
 ```bash
 > python pylisp/repl.py
 Welcome to pylisp.
->(set! f (lambda (x) (if (< x 2) x (* x (f (dec x))))))
+>(define f (lambda (x) (if (< x 2) x (* x (f (dec x))))))
 >(f 7)
 5040.0
 ```
