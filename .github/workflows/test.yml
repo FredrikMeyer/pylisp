@@ -41,4 +41,4 @@ jobs:
 
     - name: Lint with pylint
       run: |
-         pylint --msg-template='::notice file={path},line={line},col={column},title={symbol}::{msg}' pylisp
+         pylint --msg-template='::notice file={path},line={line},col={column},title={symbol}::{msg}' pylisp |& grep notice && exit ${pipestatus[1]}
