@@ -172,6 +172,9 @@ def is_self_evaluating(expr: Expr) -> TypeGuard[Union[bool, str, int, float]]:
 
 
 def is_variable(expr: Expr) -> TypeGuard[Symbol]:
+    """
+    Verify that expr is a variable.
+    """
     if isinstance(expr, Symbol):
         return True
     return False
@@ -201,31 +204,15 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
         return eval_sexp(cadddr(expr), env)
 
     if car(expr) == "define":
-        name = cadr(expr)
-        if check_symbol(name):
-            value = eval_sexp(caddr(expr), env)
-            if check_atom(value):
-                env.update_environment(name, value)
-                return value
+        return eval_define(expr, env)
 
-            raise RuntimeError("Wrong type of arg to define.")
-
-        raise RuntimeError("Value must be symbol.")
     if car(expr) == "lambda":
-        args = cadr(expr)
-        if not isinstance(args, list):
-            raise RuntimeError("Syntax error.")
+        return eval_lambda(expr, env)
 
-        body = caddr(expr)
-        if check_all_symbol(args):
-            return UserFunction(body=body, args=args, env=env)
-
-        raise RuntimeError(f"Lambda args must be symbols. Args {args}.")
-
-    fn = eval_sexp(car(expr), env)
-    if not isinstance(fn, (UserFunction, PrimitiveFunction)):
+    fun = eval_sexp(car(expr), env)
+    if not isinstance(fun, (UserFunction, PrimitiveFunction)):
         raise RuntimeError(
-            f"Unknown function: {fn}. Is of type {type(fn)}. Expr: {expr}"
+            f"Unknown function: {fun}. Is of type {type(fun)}. Expr: {expr}"
         )
 
     args = cdr(expr)
@@ -233,7 +220,7 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
         raise RuntimeError("Arguments is not a list")
     args_evaluated = list(map(lambda e: eval_sexp(e, env), args))
 
-    return apply_sexp(fn, args_evaluated)
+    return apply_sexp(fun, args_evaluated)
 
 
 def apply_sexp(
@@ -260,6 +247,37 @@ def apply_sexp(
     return eval_sexp(proc.body, proc.env.extend_environment(new_env_values))
 
 
+def eval_define(expr: Sequence[Expr], env: Environment) -> Atom:
+    """
+    Evaluate a define-expression.
+    """
+    name = cadr(expr)
+    if check_symbol(name):
+        value = eval_sexp(caddr(expr), env)
+        if check_atom(value):
+            env.update_environment(name, value)
+            return value
+
+        raise RuntimeError("Wrong type of arg to define.")
+
+    raise RuntimeError("Value must be symbol.")
+
+
+def eval_lambda(expr: Sequence[Expr], env: Environment) -> UserFunction:
+    """
+    Evaluate an S-expression defining a lambda.
+    """
+    args = cadr(expr)
+    if not isinstance(args, list):
+        raise RuntimeError("Syntax error.")
+
+    body = caddr(expr)
+    if check_all_symbol(args):
+        return UserFunction(body=body, args=args, env=env)
+
+    raise RuntimeError(f"Lambda args must be symbols. Args {args}.")
+
+
 def check_all_number(atoms: list[Atom | Expr]) -> TypeGuard[list[int | float]]:
     """
     Typeguard to verify that all items in `atoms` is of number type.
@@ -282,6 +300,9 @@ def check_all_symbol(args: list[Expr | Atom]) -> TypeGuard[list[Symbol]]:
 
 
 def check_atom(arg: Expr | Atom) -> TypeGuard[Atom]:
+    """
+    Verify that `arg` is an Atom.
+    """
     return not isinstance(arg, list)
 
 
