@@ -157,12 +157,18 @@ def car(expr: Sequence[Expr]) -> Expr:
 
 
 def cdr(expr: Sequence[Expr]) -> Expr:
+    """
+    Return rest of list.
+    """
     if not isinstance(expr, list):
         raise RuntimeError("expr must be a list.")
     return expr[1:]
 
 
 def cadr(expr: Sequence[Expr]) -> Expr:
+    """
+    Return second element in a sequence.
+    """
     return expr[1]
 
 
@@ -174,7 +180,7 @@ def cadddr(expr: Sequence[Expr]) -> Expr:
     return expr[3]
 
 
-def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
+def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr:
     """
     Eval the given S-expression. The first half of the eval-apply loop.
     """
@@ -193,10 +199,7 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
     if car(expr) == "quote":
         return expr[1:][0]
     if car(expr) == "if":
-        if eval_sexp(cadr(expr), env):
-            return eval_sexp(caddr(expr), env)
-
-        return eval_sexp(cadddr(expr), env)
+        return eval_if(expr, env)
 
     if car(expr) == "define":
         return eval_define(expr, env)
@@ -240,6 +243,18 @@ def apply_sexp(
     new_env_values = list(zip(procedure_args, args))
 
     return eval_sexp(proc.body, proc.env.extend_environment(new_env_values))
+
+
+def eval_if(expr: Sequence[Expr], env: Environment) -> Atom | Expr:
+    """
+    Eval an if block. If condition is (Python) True, then eval first term, else
+    eval second term.
+    """
+    condition = cadr(expr)
+    if eval_sexp(condition, env):
+        return eval_sexp(caddr(expr), env)
+
+    return eval_sexp(cadddr(expr), env)
 
 
 def eval_define(expr: Sequence[Expr], env: Environment) -> Atom:
