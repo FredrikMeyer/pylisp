@@ -7,6 +7,9 @@ Modules:
  - [[repl.py]]. An implementation of a simple read-eval loop. Can be run by
    typing `pslp` after installation.
  - [[parse.py]]. Functions for parsing strings into S-expressions.
+
+After installation, run it from the command line with plsp. Or just type
+directly `python pylisp/repl.py`.
 """
 from functools import reduce
 from typing import (
@@ -297,6 +300,8 @@ def mult(args: Sequence[int | float]) -> float:
 
 
 # === Typeguards ===
+
+
 # Integrates type checks and assertions.
 
 
