@@ -25,7 +25,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip mypy
-        pip install .
+        pip install --editable .
     - name: mypy type checks
       run: |
         python run_mypy.py
