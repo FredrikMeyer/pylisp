@@ -37,7 +37,9 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --statistics
     - name: Test with pytest
       run: |
-        pytest
+        pytest --cov
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
 
     - name: Lint with pylint
       run: |
