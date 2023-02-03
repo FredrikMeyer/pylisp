@@ -28,9 +28,8 @@ jobs:
     - name:  Build docs
       run: |
         pycco pylisp/*.py
-        echo ls docs/*.html
         ls docs/*.html | xargs sed -i -r 's/eval\.html/index\.html/'
-        mv eval.html index.html
+        mv docs/eval.html docs/index.html
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v1
       with:
