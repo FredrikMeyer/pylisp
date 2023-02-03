@@ -1,5 +1,7 @@
 # (yet another) Python Lisp
 
+See [fredrikmeyer.net/pylisp/](https://fredrikmeyer.net/pylisp/) for a literate style documentation.
+
 ## Installation
 
 Run `pip install --editable .`. There are no dependencies.
@@ -53,9 +55,14 @@ Install Python 3.11.1:
 pyenv install 3.11.1
 ```
 
+## Build Docs
+
+Docs are built with [`pycco`](https://github.com/pycco-docs/pycco). Build them by running `pip install pycco` and `pycco pylisp/*.py`. I use a simple search-replace to make `eval.py` the index page.
+
 
 ## Similar projects 
 
  - [pavpanchekha/pylisp](https://github.com/pavpanchekha/pylisp).
  - [Peter Norvig: (How to Write a (Lisp) Interpreter (in Python))](https://norvig.com/lispy.html).
  - [(An ((Even Better) Lisp) Interpreter (in Python))](https://norvig.com/lispy2.html)
+ - [lithp](https://github.com/fogus/lithp) by fogus. Written in perhaps more idiomatic Python.

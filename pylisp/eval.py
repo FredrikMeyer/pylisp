@@ -150,6 +150,9 @@ def doc(expr: Sequence[Expr]) -> Expr:
 
 
 def car(expr: Sequence[Expr]) -> Expr:
+    """
+    Get the first element of a sequence of expressions.
+    """
     return expr[0]
 
 
@@ -171,26 +174,11 @@ def cadddr(expr: Sequence[Expr]) -> Expr:
     return expr[3]
 
 
-def is_self_evaluating(expr: Expr) -> TypeGuard[Union[bool, str, int, float]]:
-    if isinstance(expr, (list, Symbol)):
-        return False
-
-    return True
-
-
-def is_variable(expr: Expr) -> TypeGuard[Symbol]:
-    """
-    Verify that expr is a variable.
-    """
-    if isinstance(expr, Symbol):
-        return True
-    return False
-
-
 def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr | UserFunction:
     """
     Eval the given S-expression. The first half of the eval-apply loop.
     """
+    # Self evaluating expressions are symbols, strings, and numbers.
     if is_self_evaluating(expr):
         return expr
     if is_variable(expr):
@@ -285,6 +273,17 @@ def eval_lambda(expr: Sequence[Expr], env: Environment) -> UserFunction:
     raise RuntimeError(f"Lambda args must be symbols. Args {args}.")
 
 
+def add(args: Sequence[int | float]) -> float:
+    return reduce(lambda acc, curr: acc + curr, args, 0.0)
+
+
+def mult(args: Sequence[int | float]) -> float:
+    return reduce(lambda acc, curr: acc * curr, args, 1.0)
+
+
+# Typeguards. Integrates type checks and assertions.
+
+
 def check_all_number(atoms: list[Atom | Expr]) -> TypeGuard[list[int | float]]:
     """
     Typeguard to verify that all items in `atoms` is of number type.
@@ -317,9 +316,17 @@ def check_all_atom(args: list[Expr | Atom]) -> TypeGuard[list[Atom]]:
     return all(not isinstance(x, list) for x in args)
 
 
-def add(args: Sequence[int | float]) -> float:
-    return reduce(lambda acc, curr: acc + curr, args, 0.0)
+def is_self_evaluating(expr: Expr) -> TypeGuard[Union[bool, str, int, float]]:
+    if isinstance(expr, (list, Symbol)):
+        return False
+
+    return True
 
 
-def mult(args: Sequence[int | float]) -> float:
-    return reduce(lambda acc, curr: acc * curr, args, 1.0)
+def is_variable(expr: Expr) -> TypeGuard[Symbol]:
+    """
+    Verify that expr is a variable.
+    """
+    if isinstance(expr, Symbol):
+        return True
+    return False
