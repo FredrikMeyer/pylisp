@@ -1,5 +1,12 @@
 """
-Code for evalutating S-expressions.
+**pylisp** is a simple Lisp interpreter.
+
+Modules:
+
+ - This one. Contains the `eval_sexp` and `apply_sexp` functions.
+ - [[repl.py]]. An implementation of a simple read-eval loop. Can be run by
+   typing `pslp` after installation.
+ - [[parse.py]]. Functions for parsing strings into S-expressions.
 """
 from functools import reduce
 from typing import (
