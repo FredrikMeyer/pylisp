@@ -37,13 +37,21 @@ class Symbol:
 Atom = Union[bool, str, int, float, Symbol, "UserFunction", "PrimitiveFunction"]
 Expr = Union[Sequence["Expr" | Atom], Atom]
 
+"""
+A _frame_ is the term used by the authors of SICP to refer to variables in the the
+current closure.
+"""
 Frame = dict[Symbol, Atom]
 
 
 @dataclass
 class Environment:
     """
-    Represents the current environment.
+    Represents the current environment. An environment consists of a frame, together
+    with possibly a reference to the outer frame.
+
+    This is how lexical scoping works: variables in the current scope might shadow
+    variables in the outer scope.
     """
 
     vars: Frame
@@ -51,7 +59,7 @@ class Environment:
 
     def lookup_variable(self, variable: Symbol) -> Atom | None:
         """
-        Lookup variable in environment. Lexical scoping is used: if the variable is
+        Lookup variable in the environment. Lexical scoping is used: if the variable is
         not found in the current frame, we look it up in the outer frame recursively.
         """
         var = self.vars.get(variable)
@@ -81,7 +89,7 @@ class Environment:
 @dataclass
 class UserFunction:
     """
-    Represents a lambda function. It has a list of args and a body. It also remembers
+    Represents a lambda function. It has a list of args and a body. It remembers
     the environment in which it was created.
     """
 
@@ -96,7 +104,9 @@ SubTypeAtom = TypeVar("SubTypeAtom", bound=Expr)
 @dataclass
 class PrimitiveFunction(Generic[SubTypeAtom]):
     """
-    A primitive function is a non-Lisp function.
+    A primitive function is a non-Lisp function, defined in the implementing language.
+
+    We give it a function and a docstring to create it.
     """
 
     func: Callable[[Sequence[SubTypeAtom]], SubTypeAtom]
@@ -137,9 +147,153 @@ def standard_env() -> Environment:
     )
 
 
+def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr:
+    """
+    Eval the given S-expression. The first half of the eval-apply loop.
+    """
+    # Self evaluating expressions are symbols, strings, and numbers.
+    if is_self_evaluating(expr):
+        return expr
+
+    # A variable is a symbol. We try to look it up.
+    if is_variable(expr):
+        res = env.lookup_variable(expr)
+        if res is None:
+            raise LookupError(f"No variable {expr}.")
+        return res
+
+    # If the input is not a sequence, it should be either a symbol or a value.
+    # We raise an error if it is neither.
+    if not isinstance(expr, Sequence):
+        raise RuntimeError(f"Unknown token type: {expr}.")
+
+    # If we encouter the expression (), raise an error.
+    if len(expr) == 0:
+        raise RuntimeError("Empty S-expression.")
+
+    # A quoted expression just returns the expression, like this:
+    # (quote (+ 1 2)) -> (+ 1 2).
+    # This is how "code is data" makes sense in Lisp languages.
+    if car(expr) == "quote":
+        return expr[1:][0]
+
+    if car(expr) == "if":
+        return eval_if(expr, env)
+
+    # Define a value:
+    # (define a 2) sets the symbol a to point to the value 2.
+    if car(expr) == "define":
+        return eval_define(expr, env)
+
+    # Define a lambda expression.
+    if car(expr) == "lambda":
+        return eval_lambda(expr, env)
+
+    # We have exhausted the syntax forms (quote, if, lambda, etc...), so our expression
+    # is a function that must be evaluated. We do this by evaluating the first element
+    # in the sequence:
+    # ((if 1 + -) 1 2) -> (+ 1 2)
+    fun = eval_sexp(car(expr), env)
+
+    # If it does not resolve to a function, raise an error.
+    if not isinstance(fun, (UserFunction, PrimitiveFunction)):
+        raise RuntimeError(
+            f"Unknown function: {fun}. Is of type {type(fun)}. Expr: {expr}"
+        )
+
+    # We extract the arguments of the function and evaluate them in the current
+    # environment.
+    args = cdr(expr)
+    if not isinstance(args, list):
+        raise RuntimeError("Arguments is not a list")
+    args_evaluated = list(map(lambda e: eval_sexp(e, env), args))
+
+    # We bounce over to the other half of the eval-apply loop to evaluate the
+    # function.
+    return apply_sexp(fun, args_evaluated)
+
+
+def apply_sexp(
+    proc: UserFunction | PrimitiveFunction[Expr], args: list[Atom | Expr]
+) -> Atom | Expr | UserFunction:
+    """
+    The other half of the eval-apply loop. Given a function type, reduces it by
+    evaluating terms recursively.
+    """
+
+    # If the function is a primitive function, just apply it to the arguments.
+    if isinstance(proc, PrimitiveFunction):
+        return proc(args)
+
+    if not isinstance(proc, UserFunction):
+        raise RuntimeError(f"Unknown function {proc}.")
+    procedure_args = proc.args
+
+    if len(procedure_args) != len(args):
+        raise RuntimeError(f"Wrong number of args passed to function {proc}.")
+
+    if not check_all_atom(args):
+        raise RuntimeError("Not all args are atoms.")
+
+    # This line contains a lot. The way to evaluate a lambda function is to extend
+    # its environment with values for the symbols in its argument list.
+    new_env_values = list(zip(procedure_args, args))
+    extended_environment = proc.env.extend_environment(new_env_values)
+
+    # Then we hand the evaluation back to eval_sexp again.
+    return eval_sexp(proc.body, extended_environment)
+
+
+def eval_if(expr: Sequence[Expr], env: Environment) -> Atom | Expr:
+    """
+    Eval an if block. If condition is (Python) True, then eval first term, else
+    eval second term.
+    """
+    condition = cadr(expr)
+    if eval_sexp(condition, env):
+        return eval_sexp(caddr(expr), env)
+
+    return eval_sexp(cadddr(expr), env)
+
+
+def eval_define(expr: Sequence[Expr], env: Environment) -> Atom:
+    """
+    Evaluate a define-expression.
+    """
+    name = cadr(expr)
+    if check_symbol(name):
+        value = eval_sexp(caddr(expr), env)
+        if check_atom(value):
+            env.update_environment(name, value)
+            return value
+
+        raise RuntimeError("Wrong type of arg to define.")
+
+    raise RuntimeError("Value must be symbol.")
+
+
+def eval_lambda(expr: Sequence[Expr], env: Environment) -> UserFunction:
+    """
+    Evaluate an S-expression defining a lambda.
+
+    A lambda consists of three things: its body, which is just a sequence of
+    S-expressions, its argument list, which is a list of unresolved symbols,
+    and finally, a reference to the environment it was created in.
+    """
+    args = cadr(expr)
+    if not isinstance(args, list):
+        raise RuntimeError("Syntax error.")
+
+    body = caddr(expr)
+    if check_all_symbol(args):
+        return UserFunction(body=body, args=args, env=env)
+
+    raise RuntimeError(f"Lambda args must be symbols. Args {args}.")
+
+
 def doc(expr: Sequence[Expr]) -> Expr:
     """
-    Print the doc of the given function. The argument must be of type
+    Print the docstring of the given function. The argument must be of type
     PrimitiveFunction.
     """
     if len(expr) != 1:
@@ -181,114 +335,6 @@ def caddr(expr: Sequence[Expr]) -> Expr:
 
 def cadddr(expr: Sequence[Expr]) -> Expr:
     return expr[3]
-
-
-def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr:
-    """
-    Eval the given S-expression. The first half of the eval-apply loop.
-    """
-    # Self evaluating expressions are symbols, strings, and numbers.
-    if is_self_evaluating(expr):
-        return expr
-    if is_variable(expr):
-        res = env.lookup_variable(expr)
-        if res is None:
-            raise LookupError(f"No variable {expr}.")
-        return res
-    if not isinstance(expr, Sequence):
-        raise RuntimeError(f"Unknown token type: {expr}.")
-    if len(expr) == 0:
-        raise RuntimeError("Empty S-expression.")
-    if car(expr) == "quote":
-        return expr[1:][0]
-    if car(expr) == "if":
-        return eval_if(expr, env)
-
-    if car(expr) == "define":
-        return eval_define(expr, env)
-
-    if car(expr) == "lambda":
-        return eval_lambda(expr, env)
-
-    fun = eval_sexp(car(expr), env)
-    if not isinstance(fun, (UserFunction, PrimitiveFunction)):
-        raise RuntimeError(
-            f"Unknown function: {fun}. Is of type {type(fun)}. Expr: {expr}"
-        )
-
-    args = cdr(expr)
-    if not isinstance(args, list):
-        raise RuntimeError("Arguments is not a list")
-    args_evaluated = list(map(lambda e: eval_sexp(e, env), args))
-
-    return apply_sexp(fun, args_evaluated)
-
-
-def apply_sexp(
-    proc: UserFunction | PrimitiveFunction[Expr], args: list[Atom | Expr]
-) -> Atom | Expr | UserFunction:
-    """
-    The other half of the eval-apply loop. Given a function type, reduces it by
-    evaluating terms recursively.
-    """
-    if isinstance(proc, PrimitiveFunction):
-        return proc(args)
-
-    if not isinstance(proc, UserFunction):
-        raise RuntimeError(f"Unknown function {proc}.")
-    procedure_args = proc.args
-
-    if len(procedure_args) != len(args):
-        raise RuntimeError(f"Wrong number of args passed to function {proc}.")
-
-    if not check_all_atom(args):
-        raise RuntimeError("Not all args are atoms.")
-    new_env_values = list(zip(procedure_args, args))
-
-    return eval_sexp(proc.body, proc.env.extend_environment(new_env_values))
-
-
-def eval_if(expr: Sequence[Expr], env: Environment) -> Atom | Expr:
-    """
-    Eval an if block. If condition is (Python) True, then eval first term, else
-    eval second term.
-    """
-    condition = cadr(expr)
-    if eval_sexp(condition, env):
-        return eval_sexp(caddr(expr), env)
-
-    return eval_sexp(cadddr(expr), env)
-
-
-def eval_define(expr: Sequence[Expr], env: Environment) -> Atom:
-    """
-    Evaluate a define-expression.
-    """
-    name = cadr(expr)
-    if check_symbol(name):
-        value = eval_sexp(caddr(expr), env)
-        if check_atom(value):
-            env.update_environment(name, value)
-            return value
-
-        raise RuntimeError("Wrong type of arg to define.")
-
-    raise RuntimeError("Value must be symbol.")
-
-
-def eval_lambda(expr: Sequence[Expr], env: Environment) -> UserFunction:
-    """
-    Evaluate an S-expression defining a lambda.
-    """
-    args = cadr(expr)
-    if not isinstance(args, list):
-        raise RuntimeError("Syntax error.")
-
-    body = caddr(expr)
-    if check_all_symbol(args):
-        return UserFunction(body=body, args=args, env=env)
-
-    raise RuntimeError(f"Lambda args must be symbols. Args {args}.")
 
 
 def add(args: Sequence[int | float]) -> float:
