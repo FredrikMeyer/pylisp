@@ -24,13 +24,17 @@ def main(inp: str, env: Environment) -> Expr:
         return str(exception)
 
 
-if __name__ == "__main__":
+def repl() -> None:
+    """
+    Run a simple REPL.
+    """
     import cmd
 
     class CmdL(cmd.Cmd):
         """
         Subclass of cmd.Cmd. Makes a simple read-eval loop.
         """
+
         intro = "Welcome to pylisp."
         prompt = ">"
 
@@ -47,3 +51,7 @@ if __name__ == "__main__":
             print(res)
 
     CmdL().cmdloop()
+
+
+if __name__ == "__main__":
+    repl()
