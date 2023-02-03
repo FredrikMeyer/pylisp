@@ -296,7 +296,8 @@ def mult(args: Sequence[int | float]) -> float:
     return reduce(lambda acc, curr: acc * curr, args, 1.0)
 
 
-# Typeguards. Integrates type checks and assertions.
+# === Typeguards ===
+# Integrates type checks and assertions.
 
 
 def check_all_number(atoms: list[Atom | Expr]) -> TypeGuard[list[int | float]]:
