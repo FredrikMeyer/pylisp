@@ -22,7 +22,10 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/pypa/sampleproject"
+"Homepage" = "https://github.com/FredrikMeyer/pylisp"
+
+[project.scripts]
+plsp = "pylisp.repl:repl"
 
 [tool.mypy]
 python_version = "3.11"
