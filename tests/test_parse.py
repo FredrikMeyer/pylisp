@@ -99,3 +99,14 @@ def test_tokenize():
         Token(token_type="NUMBER", payload=43),
         Token(token_type="RIGHT_PAREN", payload=None),
     ]
+
+
+def test_parse_boolean():
+    res = tokenize("(#t #f)")
+
+    should_be_true = res[1]
+    should_be_false = res[2]
+
+    print(res)
+    assert should_be_true["payload"] == True
+    assert should_be_false["payload"] == False
