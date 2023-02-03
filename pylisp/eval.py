@@ -172,7 +172,7 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr:
         raise RuntimeError("Empty S-expression.")
 
     # A quoted expression just returns the expression, like this:
-    # (quote (+ 1 2)) -> (+ 1 2).
+    # `(quote (+ 1 2)) -> (+ 1 2)`
     # This is how "code is data" makes sense in Lisp languages.
     if car(expr) == "quote":
         return expr[1:][0]
@@ -181,7 +181,7 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr:
         return eval_if(expr, env)
 
     # Define a value:
-    # (define a 2) sets the symbol a to point to the value 2.
+    # `(define a 2)` sets the symbol a to point to the value 2.
     if car(expr) == "define":
         return eval_define(expr, env)
 
@@ -192,7 +192,7 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr:
     # We have exhausted the syntax forms (quote, if, lambda, etc...), so our expression
     # is a function that must be evaluated. We do this by evaluating the first element
     # in the sequence:
-    # ((if 1 + -) 1 2) -> (+ 1 2)
+    # `((if 1 + -) 1 2) -> (+ 1 2)`
     fun = eval_sexp(car(expr), env)
 
     # If it does not resolve to a function, raise an error.
