@@ -1,5 +1,6 @@
 from pylisp.eval import Symbol, UserFunction, standard_env
 from pylisp.repl import main
+import pytest
 
 
 def test_factorial():
@@ -13,3 +14,13 @@ def test_factorial():
     res2 = main("(f 5)", env)
 
     assert res2 == 120.0
+
+
+def test_exception_is_printed(capsys: pytest.CaptureFixture):
+    env = standard_env()
+    res = main("(", env)
+
+    std_ouput = capsys.readouterr().out
+    assert "Traceback" in std_ouput
+
+    assert "Invalid" in res

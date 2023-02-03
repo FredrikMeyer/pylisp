@@ -1,5 +1,7 @@
 # (yet another) Python Lisp
 
+[![codecov](https://codecov.io/gh/FredrikMeyer/pylisp/branch/main/graph/badge.svg?token=PA2OOMZJ80)](https://codecov.io/gh/FredrikMeyer/pylisp)
+
 See [fredrikmeyer.net/pylisp/](https://fredrikmeyer.net/pylisp/) for a literate style documentation.
 
 ## Installation

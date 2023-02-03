@@ -98,7 +98,8 @@ def parse_string(inp: str) -> Expr:
     if len(tokens) == 1:
         # We only have a single symbol/value.
         val = tokens[0]["payload"]
-        assert val is not None
+        if val is None:
+            raise RuntimeError(f"Invalid token payload: {val}")
         return val
 
     current_token = 0
