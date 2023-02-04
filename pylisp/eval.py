@@ -185,6 +185,9 @@ def eval_sexp(expr: Expr, env: Environment) -> Atom | Expr:
     if car(expr) == "define":
         return eval_define(expr, env)
 
+    if car(expr) == "let":
+        return eval_let(expr, env)
+
     # Define a lambda expression.
     if car(expr) == "lambda":
         return eval_lambda(expr, env)
@@ -272,6 +275,30 @@ def eval_define(expr: Sequence[Expr], env: Environment) -> Atom:
     raise RuntimeError("Value must be symbol.")
 
 
+def eval_let(expr: Sequence[Expr], env: Environment) -> Expr:
+    """
+    Eval a let expression:
+    ```
+    >(let ((x 2) (y 3)) (+ x y))
+    5.0
+    ```
+    """
+    bindings = cadr(expr)
+
+    if not check_bindings(bindings):
+        raise RuntimeError("Wrong type of bindings.")
+
+    binding_symbols = [binding[0] for binding in bindings]
+    binding_vals = [binding[1] for binding in bindings]
+
+    body = caddr(expr)
+
+    # We evaluate a let expression by transforming it into a lambda.
+    # The expression `(let ((x 2)) (+ x 1))` is equivalent to the lambda
+    # expression `((lambda (x) (+ x 1)) 2)`.
+    return eval_sexp([["lambda", binding_symbols, body], *binding_vals], env)
+
+
 def eval_lambda(expr: Sequence[Expr], env: Environment) -> UserFunction:
     """
     Evaluate an S-expression defining a lambda.
@@ -330,6 +357,9 @@ def cadr(expr: Sequence[Expr]) -> Expr:
 
 
 def caddr(expr: Sequence[Expr]) -> Expr:
+    """
+    Returns the third element in a sequence.
+    """
     return expr[2]
 
 
@@ -397,3 +427,13 @@ def is_variable(expr: Expr) -> TypeGuard[Symbol]:
     if isinstance(expr, Symbol):
         return True
     return False
+
+
+def check_bindings(exprs: Expr) -> TypeGuard[list[list[Expr]]]:
+    """
+    Verify that `exprs` is a list of lists.
+    """
+    if not isinstance(exprs, list):
+        return False
+
+    return all(isinstance(inner_list, list) for inner_list in exprs)

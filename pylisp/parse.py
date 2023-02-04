@@ -8,7 +8,7 @@ TokenType = Literal[
     "LEFT_PAREN", "RIGHT_PAREN", "NUMBER", "SYMBOL", "KEYWORD", "BOOLEAN"
 ]
 
-KEYWORDS = ("lambda", "if", "quote", "define")
+KEYWORDS = ("lambda", "if", "quote", "define", "let")
 
 
 class Token(TypedDict):
