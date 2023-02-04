@@ -2,11 +2,9 @@
 Simple REPL functionality for pylisp.
 """
 import traceback
+from pylisp.environment import standard_env, Environment, Expr
 from pylisp.eval import (
-    Environment,
-    Expr,
     eval_sexp,
-    standard_env,
 )
 from pylisp.parse import parse_string
 
@@ -52,7 +50,7 @@ def repl() -> None:
             res = main(line, self.env)
             print(res)
 
-        def postcmd(self, stop: bool, line: str) -> bool:
+        def postcmd(self, _: bool, line: str) -> bool:
             return line == ":quit"
 
     CmdL().cmdloop()
