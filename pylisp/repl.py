@@ -40,6 +40,8 @@ def repl() -> None:
 
         env = standard_env()
 
+        should_exit = False
+
         def do_env(self, _: str) -> None:
             """
             Print the current environment.
@@ -49,6 +51,9 @@ def repl() -> None:
         def default(self, line: str) -> None:
             res = main(line, self.env)
             print(res)
+
+        def postcmd(self, stop: bool, line: str) -> bool:
+            return line == ":quit"
 
     CmdL().cmdloop()
 
