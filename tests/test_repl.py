@@ -24,3 +24,9 @@ def test_exception_is_printed(capsys: pytest.CaptureFixture):
     assert "Traceback" in std_ouput
 
     assert "Invalid" in res
+
+def test_docstring():
+    env = standard_env()
+    res = main("(doc +)", env)
+
+    assert res == "Add a list of numbers."

@@ -4,7 +4,9 @@ The parser functionality. Parses a string and return S-expression tokens.
 from typing import Literal, TypedDict, Union
 from pylisp.eval import Expr, Symbol
 
-TokenType = Literal["LEFT_PAREN", "RIGHT_PAREN", "NUMBER", "SYMBOL", "KEYWORD"]
+TokenType = Literal[
+    "LEFT_PAREN", "RIGHT_PAREN", "NUMBER", "SYMBOL", "KEYWORD", "BOOLEAN"
+]
 
 KEYWORDS = ("lambda", "if", "quote", "define")
 
@@ -61,6 +63,11 @@ def slurp_token(inp: str) -> tuple[Token, str]:
             curr_ind += 1
 
         return (Token(token_type="NUMBER", payload=int(inp[:curr_ind])), inp[curr_ind:])
+
+    if inp[0] == "#" and len(inp) >= 2:
+        if (false_or_true := inp[1]) in ("f", "t"):
+            value = false_or_true == "t"
+            return (Token(token_type="BOOLEAN", payload=value), inp[2:])
 
     last_char_word = find_last_non_whitespace(inp)
     the_word = inp[0:last_char_word]

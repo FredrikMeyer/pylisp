@@ -41,11 +41,11 @@ Welcome to pylisp.
  
 ## Want to Have
 
- - Booleans
  - Multiple args
  - Simple math functions. Maybe import from Python?
  - Quotes
  - Macros
+ - Read from file
 
 ## Installing Python
 
