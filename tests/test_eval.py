@@ -1,13 +1,9 @@
 import pytest
+from pylisp.environment import mult, standard_env, Environment, Symbol, UserFunction
 from pylisp.eval import (
-    Environment,
-    Symbol,
-    UserFunction,
     apply_sexp,
     check_all_number,
     eval_sexp,
-    mult,
-    standard_env,
 )
 
 

@@ -1,4 +1,4 @@
-from pylisp.eval import Symbol, UserFunction, standard_env
+from pylisp.environment import Symbol, UserFunction, standard_env
 from pylisp.repl import main, repl
 import pytest
 
@@ -42,6 +42,7 @@ def test_let():
 
 def test_repl(monkeypatch, capsys: pytest.CaptureFixture[str]):
     import io
+
     monkeypatch.setattr("sys.stdin", io.StringIO("(+ 1 2)\n:quit"))
 
     repl()

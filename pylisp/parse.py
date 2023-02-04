@@ -2,7 +2,7 @@
 The parser functionality. Parses a string and return S-expression tokens.
 """
 from typing import Literal, TypedDict, Union
-from pylisp.eval import Expr, Symbol
+from pylisp.environment import Expr, Symbol
 
 TokenType = Literal[
     "LEFT_PAREN", "RIGHT_PAREN", "NUMBER", "SYMBOL", "KEYWORD", "BOOLEAN"
