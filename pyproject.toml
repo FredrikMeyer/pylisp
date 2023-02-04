@@ -49,4 +49,4 @@ disable = "import-error"
 fail-under = "9"
 
 [tool.pyright]
-include = ["pylisp"]
+

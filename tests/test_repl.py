@@ -25,8 +25,16 @@ def test_exception_is_printed(capsys: pytest.CaptureFixture):
 
     assert "Invalid" in res
 
+
 def test_docstring():
     env = standard_env()
     res = main("(doc +)", env)
 
     assert res == "Add a list of numbers."
+
+
+def test_let():
+    env = standard_env()
+    res = main("(let ((x 2) (y 3)) (+ x y))", env)
+
+    assert res == 5.0
