@@ -113,6 +113,9 @@ def standard_env() -> Environment:
     return Environment(
         vars={
             Symbol("+"): PrimitiveFunction(func=add, doc="Add a list of numbers."),
+            Symbol("-"): PrimitiveFunction(
+                func=lambda a: op.sub(*a), doc="Subtract a list of numbers."
+            ),
             Symbol("dec"): PrimitiveFunction(
                 func=lambda a: a[0] - 1, doc="Decrement a number."
             ),

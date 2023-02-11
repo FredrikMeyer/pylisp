@@ -5,7 +5,7 @@ from typing import Literal, TypedDict, Union
 from pylisp.environment import Expr, Symbol
 
 TokenType = Literal[
-    "LEFT_PAREN", "RIGHT_PAREN", "NUMBER", "SYMBOL", "KEYWORD", "BOOLEAN"
+    "LEFT_PAREN", "RIGHT_PAREN", "NUMBER", "SYMBOL", "KEYWORD", "BOOLEAN", "STRING"
 ]
 
 KEYWORDS = ("lambda", "if", "quote", "define", "let")
@@ -47,6 +47,34 @@ def find_last_non_whitespace(inp: str) -> int:
     return i
 
 
+def slurp_integer(inp: str) -> tuple[Token, str]:
+    """
+    Try to slurp an integer.
+    """
+    curr_ind = 0
+    while curr_ind < len(inp) and inp[curr_ind].isdigit():
+        curr_ind += 1
+
+    return (Token(token_type="NUMBER", payload=int(inp[:curr_ind])), inp[curr_ind:])
+
+
+def slurp_string(inp: str) -> tuple[Token, str]:
+    curr_ind = 1
+
+    # Find end of string. I.e look for second ".
+
+    while inp[curr_ind] != '"':
+        curr_ind += 1
+
+        if curr_ind == len(inp):
+            raise RuntimeError("No closing delimiter for string.")
+
+    return (
+        Token(token_type="STRING", payload=inp[1:curr_ind]),
+        inp[curr_ind + 1 :],
+    )
+
+
 def slurp_token(inp: str) -> tuple[Token, str]:
     """
     Eat a single token and return the token and the rest of the input string.
@@ -58,11 +86,10 @@ def slurp_token(inp: str) -> tuple[Token, str]:
         return (Token(token_type="RIGHT_PAREN", payload=None), inp[1:])
 
     if inp[0].isdigit():
-        curr_ind = 0
-        while curr_ind < len(inp) and inp[curr_ind].isdigit():
-            curr_ind += 1
+        return slurp_integer(inp)
 
-        return (Token(token_type="NUMBER", payload=int(inp[:curr_ind])), inp[curr_ind:])
+    if inp[0] == '"':
+        return slurp_string(inp)
 
     if inp[0] == "#" and len(inp) >= 2:
         if (false_or_true := inp[1]) in ("f", "t"):
@@ -101,13 +128,6 @@ def parse_string(inp: str) -> Expr:
     tokens = tokenize(inp)
 
     stack: list[list[Expr]] = [[]]
-
-    if len(tokens) == 1:
-        # We only have a single symbol/value.
-        val = tokens[0]["payload"]
-        if val is None:
-            raise RuntimeError(f"Invalid token payload: {val}")
-        return val
 
     current_token = 0
     while current_token < len(tokens):
