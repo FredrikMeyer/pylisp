@@ -19,11 +19,12 @@ def test_factorial():
 def test_exception_is_printed(capsys: pytest.CaptureFixture[str]):
     env = standard_env()
     res = main("(", env)
-
     std_ouput = capsys.readouterr().out
+
+    print(std_ouput)
     assert "Traceback" in std_ouput
 
-    assert "Invalid" in res
+    assert "Unbalanced parenthesis" in res
 
 
 def test_docstring():

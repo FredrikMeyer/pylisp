@@ -1,6 +1,13 @@
 import pytest
 from pylisp.eval import Symbol
-from pylisp.parse import parse_string, slurp_token, slurp_whitespace, tokenize, Token
+from pylisp.parse import (
+    parse_string,
+    slurp_string,
+    slurp_token,
+    slurp_whitespace,
+    tokenize,
+    Token,
+)
 
 
 def test_single_value():
@@ -110,3 +117,19 @@ def test_parse_boolean():
     print(res)
     assert should_be_true["payload"] == True
     assert should_be_false["payload"] == False
+
+
+def test_slurp_string():
+    res = slurp_string('"hei" 2')
+    print(res)
+
+    assert res[0] == Token(token_type="STRING", payload="hei")
+    assert res[1] == " 2"
+
+
+def test_parse_string():
+    res = tokenize('"hei"')
+
+    assert len(res) == 1
+
+    assert res[0]["payload"] == "hei"
