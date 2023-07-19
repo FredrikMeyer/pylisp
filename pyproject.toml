@@ -12,15 +12,18 @@ authors = [
 description = "A small example package"
 readme = "README.md"
 requires-python = ">=3.11.1"
-dependencies = [
-  "pytest==7.2.0",
-  "flake8==6.0.0",
-  "mypy==1.0.0",
-  "pylint==2.15.9",
-  "pytest-cov==4.0.0"
-]
+dependencies = []
 classifiers = [
     "Programming Language :: Python :: 3"
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest==7.4.0",
+  "ruff==0.0.278",
+  "mypy==1.4.1",
+  "pytest-cov==4.0.0",
+  "black==23.7.0"
 ]
 
 [project.urls]
@@ -45,9 +48,11 @@ show_error_context = true
 show_column_numbers = true
 pretty = true
 
-[tool.pylint]
-disable = "import-error"
-fail-under = "9"
+[tool.ruff]
+select = ["PL", "E", "F"]
+line-length = 88
+
+[tool.black]
 
 [tool.pyright]
 #strict = ["pylisp"]
