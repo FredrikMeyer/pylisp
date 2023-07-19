@@ -1,5 +1,5 @@
 import pytest
-from pylisp.eval import Symbol
+from pylisp.environment import Expr, Symbol
 from pylisp.parse import (
     parse_string,
     slurp_string,
@@ -10,7 +10,7 @@ from pylisp.parse import (
 )
 
 
-def test_single_value():
+def test_single_value() -> None:
     res = parse_string("5")
 
     assert not isinstance(res, list)
@@ -18,7 +18,7 @@ def test_single_value():
     assert res == 5
 
 
-def test_simple_expression():
+def test_simple_expression()  -> None:
     res = parse_string("(+ 1 2)")
 
     assert isinstance(res, list)
@@ -29,15 +29,14 @@ def test_simple_expression():
     assert res[2] == 2
 
 
-def test_nested():
+def test_nested() -> None:
     res = parse_string("(+ (+ 1 2) 3)")
 
-    assert len(res) == 3
-    print("RES", res)
-    assert len(res[1]) == 3
-    assert res[1][0] == Symbol(name="+")
-    assert res[1][1] == 1
-    assert res[1][2] == 2
+    assert len(res) == 3  # type: ignore
+    assert len(res[1]) == 3  # type: ignore
+    assert res[1][0] == Symbol(name="+")  # type: ignore
+    assert res[1][1] == 1  # type: ignore
+    assert res[1][2] == 2  # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -51,19 +50,19 @@ def test_nested():
         ("(+ 2 x)", [Symbol("+"), 2, Symbol("x")]),
     ],
 )
-def test_many(inp: str, exp):
+def test_many(inp: str, exp: Expr) -> None:
     res = parse_string(inp)
     assert res == exp
 
 
-def test_unbalanced():
+def test_unbalanced() -> None:
     with pytest.raises(RuntimeError):
         parse_string("(+ 1 2))")
     with pytest.raises(RuntimeError):
         parse_string("((+ 1 2)")
 
 
-def test_read_next_token():
+def test_read_next_token() -> None:
     read_left_paren = slurp_token("(+ 2 3)")
     token, rest = read_left_paren
     assert token == Token(token_type="LEFT_PAREN", payload=None)
@@ -80,13 +79,13 @@ def test_read_next_token():
     assert rest == " 4"
 
 
-def test_slurp_whitespace():
+def test_slurp_whitespace() -> None:
     res = slurp_whitespace("   hei")
 
     assert res == "hei"
 
 
-def test_tokenize():
+def test_tokenize() -> None:
     res = tokenize("(+ 2 3)")
 
     assert res == [
@@ -108,18 +107,18 @@ def test_tokenize():
     ]
 
 
-def test_parse_boolean():
+def test_parse_boolean() -> None:
     res = tokenize("(#t #f)")
 
     should_be_true = res[1]
     should_be_false = res[2]
 
     print(res)
-    assert should_be_true["payload"] == True
-    assert should_be_false["payload"] == False
+    assert should_be_true["payload"] is True
+    assert should_be_false["payload"] is False
 
 
-def test_slurp_string():
+def test_slurp_string() -> None:
     res = slurp_string('"hei" 2')
     print(res)
 
@@ -127,7 +126,7 @@ def test_slurp_string():
     assert res[1] == " 2"
 
 
-def test_parse_string():
+def test_parse_string() -> None:
     res = tokenize('"hei"')
 
     assert len(res) == 1
