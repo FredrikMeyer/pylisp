@@ -5,7 +5,7 @@ import pytest
 
 def test_factorial():
     env = standard_env()
-    res = main("(define f (lambda (x) (if (< x 2) x (* x (f (dec x))))))", env)
+    main("(define f (lambda (x) (if (< x 2) x (* x (f (dec x))))))", env)
 
     factorial_function = env.lookup_variable(Symbol("f"))
 

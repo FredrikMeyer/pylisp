@@ -115,8 +115,8 @@ def test_parse_boolean():
     should_be_false = res[2]
 
     print(res)
-    assert should_be_true["payload"] == True
-    assert should_be_false["payload"] == False
+    assert should_be_true["payload"] is True
+    assert should_be_false["payload"] is False
 
 
 def test_slurp_string():
