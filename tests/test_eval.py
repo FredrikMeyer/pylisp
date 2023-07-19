@@ -1,3 +1,4 @@
+from typing import Any
 import pytest
 from pylisp.environment import mult, standard_env, Environment, Symbol, UserFunction
 from pylisp.eval import (
@@ -6,12 +7,11 @@ from pylisp.eval import (
     eval_sexp,
 )
 
-
 @pytest.mark.parametrize(
     ["inp", "expected"],
     [("5", "5"), (5, 5), (["quote", 5], 5), (["quote", ["+", 2, 3]], ["+", 2, 3])],
 )
-def test_constant(inp, expected):
+def test_constant(inp: Any, expected: Any) -> None:
     res = eval_sexp(inp, Environment(vars={Symbol("x"): 2}, outer=None))
     assert res == expected
 
@@ -95,10 +95,10 @@ def test_mult():
 def test_check_all_number():
     res = check_all_number(["1", 2, 3])
 
-    assert res == False
+    assert res is False
 
     res = check_all_number([1, 2, 3])
-    assert res == True
+    assert res is True
 
 
 def test_define():
