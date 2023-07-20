@@ -2,6 +2,7 @@
 Simple REPL functionality for pylisp.
 """
 import traceback
+import sys
 from pylisp.environment import standard_env, Environment, Expr
 from pylisp.eval import (
     eval_sexp,
@@ -54,6 +55,15 @@ def repl() -> None:
             return line == ":quit"
 
     CmdL().cmdloop()
+
+
+def plsp() -> None:
+    if sys.stdin.isatty():
+        repl()
+    else:
+        input_string = sys.stdin.read()
+        res = main(input_string, standard_env())
+        print(res)
 
 
 if __name__ == "__main__":

@@ -30,7 +30,7 @@ test = [
 "Homepage" = "https://github.com/FredrikMeyer/pylisp"
 
 [project.scripts]
-plsp = "pylisp.repl:repl"
+plsp = "pylisp.repl:plsp"
 
 [tool.mypy]
 python_version = "3.11"

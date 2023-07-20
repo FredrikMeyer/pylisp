@@ -20,6 +20,13 @@ Welcome to pylisp.
 >
 ```
 
+Or pipe text:
+
+```bash
+> echo '(+ 1 2)' | plsp
+3.0
+```
+
 ### Factorial function
 
 ```bash

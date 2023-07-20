@@ -11,7 +11,7 @@ from typing import (
     Union,
     Optional,
 )
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import operator as op
 
 
@@ -44,8 +44,8 @@ class Environment:
     variables in the outer scope.
     """
 
-    vars: Frame
-    outer: Optional["Environment"]
+    vars: Frame = field(default_factory=dict)
+    outer: Optional["Environment"] = None
 
     def lookup_variable(self, variable: Symbol) -> Atom | None:
         """
