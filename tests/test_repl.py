@@ -1,6 +1,7 @@
 from pylisp.environment import Symbol, UserFunction, standard_env
-from pylisp.repl import main, repl
+from pylisp.repl import main, plsp, repl
 import pytest
+import unittest.mock as mock
 
 
 def test_factorial() -> None:
@@ -56,3 +57,18 @@ def test_repl(
     print(std_ouput)
 
     assert "3.0" in std_ouput
+
+
+@mock.patch("sys.stdin.read")
+@mock.patch("sys.stdin.isatty")
+def test_read_from_stdin(
+    mock1: mock.MagicMock, mockRead: mock.MagicMock, capsys: pytest.CaptureFixture[str]
+):
+    mock1.return_value = False
+
+    mockRead.return_value = "(+ 1 2)"
+    plsp()
+
+    std_output = capsys.readouterr().out
+
+    assert "3.0" in std_output
