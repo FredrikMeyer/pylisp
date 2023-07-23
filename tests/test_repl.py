@@ -43,11 +43,15 @@ def test_let() -> None:
     assert res == 5.0
 
 
+@mock.patch("sys.stdin.isatty")
 def test_repl(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    mockIsAtty: mock.MagicMock,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     import io
 
+    mockIsAtty.return_value = True
     monkeypatch.setattr("sys.stdin", io.StringIO("(+ 1 2)\n:quit"))
 
     plsp()
@@ -62,9 +66,11 @@ def test_repl(
 @mock.patch("sys.stdin.read")
 @mock.patch("sys.stdin.isatty")
 def test_read_from_stdin(
-    mock1: mock.MagicMock, mockRead: mock.MagicMock, capsys: pytest.CaptureFixture[str]
+    mockIsAtty: mock.MagicMock,
+    mockRead: mock.MagicMock,
+    capsys: pytest.CaptureFixture[str],
 ):
-    mock1.return_value = False
+    mockIsAtty.return_value = False
 
     mockRead.return_value = "(+ 1 2)"
     plsp()
