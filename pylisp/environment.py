@@ -18,7 +18,7 @@ import operator as op
 @dataclass(eq=True, frozen=True)
 class Symbol:
     """
-    Represents a variable.
+    Represents a variable. Evaluating a symbol means looking it up in the current frame.
     """
 
     name: str

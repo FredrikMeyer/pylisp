@@ -1,5 +1,5 @@
 from pylisp.environment import Symbol, UserFunction, standard_env
-from pylisp.repl import main, plsp
+from pylisp.repl import main, plsp, repl
 import pytest
 import unittest.mock as mock
 
@@ -54,7 +54,7 @@ def test_repl(
     mockIsAtty.return_value = True
     monkeypatch.setattr("sys.stdin", io.StringIO("(+ 1 2)\n:quit"))
 
-    plsp()
+    repl()
 
     std_ouput = capsys.readouterr().out
 
