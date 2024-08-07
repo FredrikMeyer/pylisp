@@ -31,7 +31,7 @@ jobs:
         python run_mypy.py
     - name: Lint with ruff
       run: |
-        ruff check --format=github .
+        ruff check --output-format=github .
     - name: Test with pytest
       run: |
         pytest --cov=pylisp --cov-report=xml --cov-report=term tests/
