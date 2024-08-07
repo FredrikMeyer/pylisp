@@ -49,8 +49,10 @@ show_column_numbers = true
 pretty = true
 
 [tool.ruff]
-select = ["E", "F"]
 line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F"]
 
 [tool.black]
 
