@@ -4,6 +4,7 @@ class, which implements the logic for lexical scoping.
 """
 from functools import reduce
 from typing import (
+    Any,
     Callable,
     Generic,
     Sequence,
@@ -24,7 +25,7 @@ class Symbol:
     name: str
 
 
-Atom = Union[bool, str, int, float, Symbol, "UserFunction", "PrimitiveFunction"]
+Atom = Union[bool, str, int, float, Symbol, "UserFunction", "PrimitiveFunction[Any]"]
 Expr = Union[Sequence["Expr" | Atom], Atom]
 
 """
