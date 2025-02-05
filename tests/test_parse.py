@@ -18,7 +18,7 @@ def test_single_value() -> None:
     assert res == 5
 
 
-def test_simple_expression()  -> None:
+def test_simple_expression() -> None:
     res = parse_string("(+ 1 2)")
 
     assert isinstance(res, list)

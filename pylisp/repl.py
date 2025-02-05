@@ -1,6 +1,7 @@
 """
 Simple REPL functionality for pylisp.
 """
+
 import traceback
 import sys
 from pylisp.environment import standard_env, Environment, Expr
