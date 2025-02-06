@@ -2,6 +2,7 @@
 Functions for defining the environment. Take a look especially at the Environment
 class, which implements the logic for lexical scoping.
 """
+
 from functools import reduce
 from typing import (
     Any,
