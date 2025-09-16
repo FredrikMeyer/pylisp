@@ -22,7 +22,7 @@ test = [
   "pytest==8.4.1",
   "ruff==0.12.11",
   "mypy==1.18.1",
-  "pytest-cov==6.2.1",
+  "pytest-cov==7.0.0",
   "black==25.1.0"
 ]
 
