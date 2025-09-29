@@ -23,7 +23,7 @@ test = [
   "ruff==0.13.1",
   "mypy==1.18.1",
   "pytest-cov==7.0.0",
-  "black==25.1.0"
+  "black==25.9.0"
 ]
 
 [project.urls]
