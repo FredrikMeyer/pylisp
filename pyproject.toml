@@ -19,7 +19,7 @@ classifiers = [
 
 [project.optional-dependencies]
 test = [
-  "pytest==9.0.1",
+  "pytest==9.0.2",
   "ruff==0.14.8",
   "mypy==1.19.0",
   "pytest-cov==7.0.0",
